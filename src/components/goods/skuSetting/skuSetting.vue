@@ -98,12 +98,6 @@ export default {
       coverImgStatus: false
     }
   },
-  // watch: {
-  //   'skuData': function (n, o) {
-  //     console.log(n)
-  //     console.log(o)
-  //   }
-  // },
   mounted () {
     let goodsId = sessionStorage.getItem('goods_id')
     console.log(goodsId)
