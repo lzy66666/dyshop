@@ -10,7 +10,7 @@
       </el-col>
       <el-col :span="23">
         <el-breadcrumb separator="|">
-          <el-breadcrumb-item v-for="item in classify" :key="item.Id" >{{item.goods_class}}</el-breadcrumb-item>
+          <el-breadcrumb-item v-for="item in classify" :key="item.Id">{{item.goods_class}}</el-breadcrumb-item>
         </el-breadcrumb>
       </el-col>
     </el-row>
@@ -21,7 +21,11 @@
         </el-col>
         <el-col :span="23">
           <el-breadcrumb separator="|">
-            <el-breadcrumb-item v-for="item in TGAlist" :key="item.Id" @click="handleClick(item.Id)">{{item.tag_name}}</el-breadcrumb-item>
+            <el-breadcrumb-item
+              v-for="item in TGAlist"
+              :key="item.Id"
+              @click="handleClick(item.Id)"
+            >{{item.tag_name}}</el-breadcrumb-item>
           </el-breadcrumb>
         </el-col>
       </el-col>
@@ -40,6 +44,18 @@
               </div>
             </div>
           </el-card>
+        </el-col>
+      </el-row>
+      <el-row>
+        <el-col :span="24" style="text-align:center;">
+          <el-pagination
+            @size-change="handleSizeChange"
+            @current-change="handleCurrentChange"
+            :current-page.sync="currentPage"
+            :page-size="100"
+            layout="prev, pager, next, jumper"
+            :total="1000"
+          ></el-pagination>
         </el-col>
       </el-row>
     </div>
@@ -63,7 +79,8 @@ export default {
           Id: 0
         }
       ],
-      goodsList: []
+      goodsList: [],
+      currentPage: 1
     }
   },
   mounted () {
@@ -94,26 +111,45 @@ export default {
       .catch(err => {
         console.log(err)
       })
-    // 拉取商品信息列表
-    this.axios
-      .post('/Admin/Goods/getGoodsList', { page: 1 })
-      .then(res => {
-        console.log(res)
-        // eslint-disable-next-line eqeqeq
-        if (res.data.code == 1) {
-          this.goodsList = res.data.data.data
-        }
-      })
-      .catch(err => {
-        console.log(1)
-        console.log(err)
-      })
+    this.getGoodsInfoList(1)
   },
   methods: {
+    handleSizeChange (val) {
+      console.log(`每页 ${val} 条`)
+    },
+    handleCurrentChange (val) {
+      this.getGoodsInfoList(val)
+    },
+    getGoodsInfoList (page) {
+      // 拉取商品信息列表
+      this.axios
+        .post('/Admin/Goods/getGoodsList', { page: page })
+        .then(res => {
+          console.log(res)
+          // eslint-disable-next-line eqeqeq
+          if (res.data.code == 1) {
+            let getGoodsList = res.data.data.data
+            if (getGoodsList == null) {
+              this.$message({
+                type: 'warning',
+                message: '暂无数据'
+              })
+              return
+            }
+            this.goodsList = res.data.data.data
+            this.currentPage = res.data.count
+          }else {
+
+          }
+        })
+        .catch(err => {
+          console.log(err)
+        })
+    },
     // 修改商品信息
     edit (id) {
       this.$router.push({
-        path: '',
+        path: '/addGoods/basic',
         name: 'basicSetting',
         params: {
           goods_id: id
@@ -165,7 +201,6 @@ export default {
         path: '/addGoods'
       })
     }
-
   }
 }
 </script>
@@ -178,6 +213,10 @@ export default {
 .el-breadcrumb__inner,
 .el-breadcrumb__item {
   cursor: pointer;
+}
+.goodsList {
+  background: #fff;
+  padding: 10px;
 }
 
 .goods-item img {
@@ -207,18 +246,18 @@ export default {
     padding: 0;
     float: right;
   }
-  .imgblock{
+  .imgblock {
     width: 100%;
     padding-bottom: 100%;
     position: relative;
   }
   .image {
     position: absolute;
-    top:0;
+    top: 0;
     bottom: 0;
     width: 100%;
   }
-  .goodName{
+  .goodName {
     line-height: 23px;
   }
 

@@ -30,7 +30,7 @@ export default {
           icon: 'el-icon-setting'
         },
         {
-          name: '商品管理',
+          name: '商品添加',
           path: '/addGoods',
           icon: 'el-icon-setting'
         },

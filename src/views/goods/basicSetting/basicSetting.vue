@@ -69,7 +69,7 @@
       center
       class="folderPanel"
     >
-      <v-resources :folderList="folderList" :folderMenuData="folderMenuData" v-on:callBack="imgUrlBack"></v-resources>
+      <v-resources :folderList="folderList" :folderMenuData="folderMenuData" :max="1" v-on:callBack="imgUrlBack"></v-resources>
       <!-- <div class="resourcesListBody" style="height:550px;">
         <div class="folderListMenu">
           <el-tree :data="folderMenuData" :props="defaultProps">

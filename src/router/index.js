@@ -12,7 +12,7 @@ import skuSetting from '@/views/goods/skuSetting/skuSetting'
 Vue.use(Router)
 
 export default new Router({
-  mode: 'hash',
+  mode: 'history',
   routes: [
     {
       path: '/',

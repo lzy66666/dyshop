@@ -56,17 +56,64 @@ export default {
   created () {
     this.getData()
   },
+  // 阻止路由跳转
+  // beforeRouteLeave (to, from, next) {
+  //   console.log(111111111)
+  //   console.log(to.fullPath)
+  //   console.log(111111111)
+  //   console.log(from)
+  //   console.log(111111111)
+  //   console.log(next)
+  //   console.log(111111111)
 
+  // },
+  beforeRouteEnter (to, from, next) {
+    let goods_id = to.params.goods_id
+    console.log(to)
+    let flag = false
+    if (typeof (goods_id) === 'undefined') {
+      flag = false
+    } else {
+      flag = true
+    }
+    if (flag || to.path == '/addGoods/basic') {
+      next()
+    } else {
+      next({
+        path: '/addGoods/basic'
+      })
+    }
+    // next()
+    // 在渲染该组件的对应路由被 confirm 前调用
+    // 不！能！获取组件实例 `this`
+    // 因为当守卫执行前，组件实例还没被创建
+  },
+  beforeRouteUpdate (to, from, next) {
+    let goods_id = from.params.goods_id
+    let flag = false
+    if (typeof (goods_id) === 'undefined') {
+      flag = false
+    } else {
+      flag = true
+    }
+    if (flag) {
+      next()
+    } else {
+      next({
+        path: '/addGoods/basic'
+      })
+    }
+  },
   methods: {
     getData () {
       let goods_id = this.$route.params.goods_id
-      console.log(goods_id)
+      // console.log(goods_id)
       // eslint-disable-next-line eqeqeq
-      if (typeof (goods_id) != 'undefined' || goods_id != '') {
+      if (typeof (goods_id) != 'undefined' && goods_id != '') {
         this.goods_id = goods_id
       }
       // eslint-disable-next-line eqeqeq
-      console.log(typeof (goods_id) != 'undefined')
+      // console.log(typeof (goods_id) != 'undefined')
     },
     // tab切换
     tableave (tab) {

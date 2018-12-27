@@ -12,21 +12,21 @@
           >
             <i class="el-icon-plus"></i>
           </el-upload>-->
-          <el-button type="text" @click="openResources" style="margin-bottom:10px;">添加图片</el-button>
+          <el-button @click="openResources" style="margin-bottom:10px;">添加图片</el-button>
           <draggable v-model="detailsImgList" v-if="detailsImgList.length>0">
-            <div class="coverImg" v-for="element in detailsImgList" :key="element">
-              <img :src="element" class="avatar">
+            <div class="coverImg" v-for="element in detailsImgList" :key="element.Id">
+              <img :src="element.resource_url" class="avatar">
             </div>
           </draggable>
           <!-- <div class="coverImg">
             <i class="el-icon-plus coverimage-icon" @click="openResources"></i>
-          </div> -->
+          </div>-->
         </el-col>
         <el-col :span="13" :offset="1">
           <div class="ipone">
             <el-scrollbar style="height:100%;background:#fff;">
-              <div class="detail-item" v-for="item in detailsImgList" :key="item">
-                <img :src="item" :alt="item">
+              <div class="detail-item" v-for="item in detailsImgList" :key="item.resource_url+new Date()">
+                <img :src="item.resource_url" :alt="item.resource_nickname">
               </div>
             </el-scrollbar>
           </div>
@@ -34,13 +34,29 @@
       </el-row>
     </div>
     <el-row class="footerBtn" style="text-align:center;margin-top:20px;">
-      <el-button type="primary">保存</el-button>
+      <el-button type="primary" @click="onSubmitDetails">保存</el-button>
     </el-row>
+    <el-dialog
+      title="资源管理"
+      :visible.sync="coverImgStatus"
+      width="1200px"
+      center
+      class="folderPanel"
+      :close-on-click-modal="false"
+    >
+      <v-resources
+        :folderList="folderList"
+        :folderMenuData="folderMenuData"
+        :selectImgInfo="detailsImgList"
+        v-on:callBack="imgUrlBack"
+      ></v-resources>
+    </el-dialog>
   </div>
 </template>
 
 <script>
 import draggable from 'vuedraggable'
+import vResources from '../resources/resources'
 export default {
   data () {
     return {
@@ -55,6 +71,9 @@ export default {
     this.pageInit()
   },
   methods: {
+    iopenResources () {
+      console.log(1)
+    },
     // 文件上传成功
     fileSuccess (response, file, fileList) {
       this.detailsImgList = fileList
@@ -71,42 +90,66 @@ export default {
     },
     // 初始化页面
     pageInit () {
-      setTimeout(() => {
-        this.detailsImgList = [
-          ...this.detailsImgList,
-          ...[
-            '//img30.360buyimg.com/mobilecms/s140x140_jfs/t28039/52/32299366/138727/720ee03c/5be5a0f8N81f541a1.jpg!q90.webp',
-            '//img11.360buyimg.com/mobilecms/s140x140_jfs/t3220/141/4737464960/396928/40371c69/5858f217N5524918f.jpg!q90.webp',
-            '//img11.360buyimg.com/mobilecms/s140x140_jfs/t1/22067/12/2134/185552/5c19ecdbE5afaf2fd/31f01d0c740790a8.jpg!q90.webp',
-            '//img12.360buyimg.com/mobilecms/s140x140_jfs/t20893/116/1124924329/296390/ba063ce/5b20bd28Nc7bf94a4.jpg!q90.webp'
-          ]
-        ]
-      }, 10000)
+      let goods_id = this.$route.params.goods_id
+      if (typeof (goods_id) === 'undefined' || goods_id == '') {
+
+      } else {
+        // 拉取商品详情列表
+        this.axios.post('/Admin/Goods/getGoodsFind', {goods_id: 19}).then((res) => {
+          console.log(res)
+          if (res.data.code == 1) {
+            let getImgData = res.data.data.goods_detail.split(',')
+            for (let i = 0; i < getImgData.length; i++) {
+              this.detailsImgList.push({
+                resource_url: getImgData[i]
+              })
+            }
+          }
+        }).catch((err) => {
+          console.log(err)
+        })
+      }
     },
     // 打开资源列表
     openResources () {
       this.flieType = 1
       this.folderNameList = []
-      this.axios
-        .post('/Admin/Resource/getDirList', {})
-        .then(res => {
-          // eslint-disable-next-line eqeqeq
-          if (res.data.code == 1) {
-            var dataMsg = res.data.data.data
-            this.folderList = dataMsg
-            this.folderMenuData = dataMsg
-          }
-        })
+      this.axios.post('/Admin/Resource/getDirList', {}).then(res => {
+        // eslint-disable-next-line eqeqeq
+        if (res.data.code == 1) {
+          var dataMsg = res.data.data.data
+          this.folderList = dataMsg
+          this.folderMenuData = dataMsg
+        }
+      })
       this.coverImgStatus = true
     },
     // 资源列表回调函数
     imgUrlBack (data) {
-      this.sku_form.goods_sku_head_img = data.coverimage
+      // this.sku_form.goods_sku_head_img = data.coverimage
       this.coverImgStatus = data.coverImgStatus
+    },
+    onSubmitDetails () {
+      let imgArray = []
+      for (let i = 0; i < this.detailsImgList.length; i++) {
+        imgArray.push(this.detailsImgList[i].resource_url)
+      }
+      this.axios.post('/Admin/Goods/saveGoodsDetail', {goods_id: 19, goods_detail: imgArray.join(',')}).then((res) => {
+        console.log(res)
+        if (res.data.code == 1) {
+          this.$message({
+            type: 'success',
+            message: '提交成功'
+          })
+        }
+      }).catch((error) => {
+        console.log(error)
+      })
     }
   },
   components: {
-    draggable
+    draggable,
+    vResources
   }
 }
 </script>
@@ -164,6 +207,7 @@ export default {
   cursor: pointer;
   position: relative;
   overflow: hidden;
+  margin:5px;
   &:hover {
     border-color: #409eff;
   }
@@ -175,7 +219,7 @@ export default {
     height: 178px;
     line-height: 178px;
     text-align: center;
-    display: block
+    display: block;
   }
 }
 </style>

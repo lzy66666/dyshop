@@ -18,14 +18,14 @@
           <div class="folderName">
             <i class="el-breadcrumb__separator el-icon-arrow-right"></i>
           </div>
-          <div class="folderName" v-for="(item,index) in folderNameList" :key="index">{{item.name}}</div>
+          <div class="folderName" v-for="item in folderNameList" :key="item.Id+1">{{item.name}}</div>
         </div>
         <div
           class="img-box-card"
           v-for="(item,index) in folderList"
-          :key="index"
           @click="getImgList(index)"
           v-if="flieType == 1"
+          :key="item.dir_name+2"
         >
           <div class="viewDir"></div>
           <div class="file-name">{{item.dir_name}}</div>
@@ -33,8 +33,8 @@
         <div
           class="img-box-card"
           v-for="(item,index) in flieImgList"
-          :key="index"
-          :data-id="item.Id"
+          :data-id="item.Id+3"
+          :key="item.resource_name"
           @click="selectImg(index)"
           v-if="flieType == 2"
         >
@@ -68,31 +68,24 @@ export default {
       defaultProps: {
         label: 'dir_name'
       },
-      folderNameList: [],
-      selectImgInfo: []
+      folderNameList: []
     }
   },
+  created () {
+    // if (typeof this.max === 'undefined') {
+    //   this.max = 3
+    // } else {
+    //   this.max = this.max
+    // }
+    // this.parentSelectImgInfo = this.selectImgInfo
+    // console.log(this.parentSelectImgInfo)
+  },
   // eslint-disable-next-line vue/no-dupe-keys
-  props: ['folderMenuData', 'folderList'],
+  props: ['folderMenuData', 'folderList', 'max', 'selectImgInfo'],
   methods: {
     openResources () {
       this.flieType = 1
-
-      // this.folderNameList = []
-      // this.axios
-      //   .post('/Admin/Resource/getDirList', {})
-      //   .then(res => {
-      //     // eslint-disable-next-line eqeqeq
-      //     if (res.data.code == 1) {
-      //       var dataMsg = res.data.data.data
-      //       this.folderList = dataMsg
-      //       this.folderMenuData = dataMsg
-      //     }
-      //   })
-      //   .catch(err => {
-      //     console.log(err)
-      //   })
-      // this.coverImgStatus = true
+      this.folderNameList = []
     },
     // 打开资源文件夹请求图片文件
     getImgList (index) {
@@ -106,10 +99,19 @@ export default {
           dir_id: this.folderList[index].Id
         })
         .then(res => {
-          console.log(res)
+          console.log('imgs')
+          console.log(res.data.data.data)
+          console.log('oldimgs')
+          console.log(this.selectImgInfo)
           this.flieImgList = res.data.data.data
+          for (let i = 0; i < this.selectImgInfo.length; i++) {
+            for (let j = 0; j < this.flieImgList.length; j++) {
+              if (this.selectImgInfo[i].resource_url == this.flieImgList[j].resource_url) {
+                this.flieImgList[i].active = true
+              }
+            }
+          }
           this.flieImgStatus = false
-          console.log(this.folderList)
           this.folderNameList.push({ name: this.folderList[index].dir_name })
         })
         .catch(err => {
@@ -119,19 +121,38 @@ export default {
     // 资源列表菜单事件
     folderListMenuClick (name) {
       let index = this.folderMenuData.findIndex(d => d.dir_name === name.label)
-      console.log(index)
       this.getImgList(index)
     },
     // 选中图片
     selectImg (index) {
-      this.selectImgInfo = []
-      for (let i = 0; i < this.flieImgList.length; i++) {
-        // eslint-disable-next-line eqeqeq
-        if (i == index) {
-          this.$set(this.flieImgList[i], 'active', true)
-          this.selectImgInfo.push(this.flieImgList[i])
+      if (this.max === 1) {
+        this.selectImgInfo = []
+        for (let i = 0; i < this.flieImgList.length; i++) {
+          // eslint-disable-next-line eqeqeq
+          if (i == index) {
+            // this.$set(this.flieImgList[i], 'active', true)
+            this.flieImgList[i].active = true
+            this.selectImgInfo.push(this.flieImgList[i])
+          } else {
+            this.flieImgList[i].active = false
+            // this.$set(this.flieImgList[i], 'active', false)
+          }
+        }
+      } else {
+        console.log('多图片选择')
+        let status = this.flieImgList[index].active
+        console.log('选中状态' + status)
+        if (typeof (status) === 'undefined' || status === false) {
+          console.log(1111111111111111)
+          this.selectImgInfo.push(this.flieImgList[index])
+          this.$set(this.flieImgList[index], 'active', true)
         } else {
-          this.$set(this.flieImgList[i], 'active', false)
+          this.selectImgInfo.splice(index, 1)
+          console.log(this.flieImgList)
+          this.flieImgList[index].active = false
+          console.log(1111111111111)
+          console.log(this.flieImgList)
+          // this.$set(this.flieImgList[index], 'active', false)
         }
       }
     },
@@ -275,7 +296,7 @@ export default {
   .is-focusable {
     color: #409eff;
   }
-  .dialog-footer{
+  .dialog-footer {
     padding: 10px 20px 20px;
     display: block;
     text-align: center;
