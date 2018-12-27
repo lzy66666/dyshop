@@ -1,3 +1,4 @@
+/* eslint-disable eqeqeq */
 <template>
   <el-form
     :model="goodsFrom"
@@ -213,33 +214,23 @@ export default {
         ]
       },
       coverImgStatus: false,
-      flieType: 1,
       folderList: [],
       flieImgList: [],
-      folderMenuData: [
-        {
-          label: '一级 1'
-        },
-        {
-          label: '一级 2'
-        },
-        {
-          label: '一级 3'
-        }
-      ],
+      folderMenuData: [],
       defaultProps: {
         label: 'dir_name'
       },
       folderNameList: [],
-      selectImgInfo: []
+      selectImgInfo: [],
+      postType: 1
     }
   },
+  created () {
+    this.getData()
+  },
   mounted () {
-    // 请求分类
     this.axios.post('/Admin/Goods/getGoodsClass', {}).then(res => {
-      console.log(res)
       this.classValueList = res.data.data
-      console.log(this.classValueList)
     })
   },
   methods: {
@@ -275,7 +266,7 @@ export default {
       this.tagVisible = true
       this.tagSelectList = []
       this.axios.post('/Admin/Goods/getGoodsTagList', {}).then(res => {
-        console.log(res)
+        // console.log(res)
         // eslint-disable-next-line eqeqeq
         if (res.data.code == 1) {
           let tagArray = this.goodsFrom.goods_labels
@@ -321,13 +312,20 @@ export default {
     },
     // 提交form表单
     onSubmit (formName) {
+      let postUrl = '/Admin/Goods/addGoodsInfo'
+      // eslint-disable-next-line eqeqeq
+      if (this.postType == 1) {
+        postUrl = '/Admin/Goods/addGoodsInfo'
+      } else {
+        postUrl = '/Admin/Goods/saveGoodsInfo'
+      }
       this.$refs[formName].validate(valid => {
         console.log(valid)
         if (valid) {
           // for(let i=0;i<this.goodsFrom.)
           // eslint-disable-next-line no-unreachable
           this.axios
-            .post('/Admin/Goods/addGoodsInfo', this.goodsFrom)
+            .post(postUrl, this.goodsFrom)
             .then(res => {
               console.log(res)
               // eslint-disable-next-line eqeqeq
@@ -371,8 +369,43 @@ export default {
     // 资源列表回调函数
     imgUrlBack (data) {
       console.log(data)
-      this.goodsFrom.coverimage = data.coverimage
+      if (data.coverimage) {
+        this.goodsFrom.coverimage = data.coverimage
+      }
       this.coverImgStatus = data.coverImgStatus
+    },
+    getData () {
+      // eslint-disable-next-line camelcase
+      let goods_id = this.$route.params.goods_id
+      // eslint-disable-next-line eqeqeq
+      if (goods_id != '' || typeof (goods_id) !== 'undefined') {
+        this.axios.post('/Admin/Goods/getGoodsFind', {goods_id: goods_id}).then((res) => {
+          // eslint-disable-next-line eqeqeq
+          if (res.data.code == 1) {
+            let getGoodsData = res.data.data
+            this.goodsFrom = getGoodsData
+            // nickname 参数对不上
+            this.goodsFrom.nickname = getGoodsData.goods_nickname
+            // 销售标签赋值
+            this.goodsFrom.goods_labels = getGoodsData.tags
+            // 是否使用赋值
+            // eslint-disable-next-line eqeqeq
+            if (getGoodsData.is_use == 1) {
+              this.goodsFrom.is_use = true
+            } else {
+              this.goodsFrom.is_use = false
+            }
+            // cover图片赋值
+            this.goodsFrom.coverimage = getGoodsData.goods_head_img
+            // 商品单位赋值
+            this.goodsFrom.goods_company = getGoodsData.goods_unit
+            this.postType = 2
+            this.goodsFrom.goods_id = goods_id
+          }
+        }).catch((error) => {
+          console.log(error)
+        })
+      }
     }
   },
   components: {

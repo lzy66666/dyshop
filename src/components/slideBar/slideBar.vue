@@ -25,7 +25,7 @@ export default {
     return {
       menulist: [
         {
-          name: '首页',
+          name: '商品列表',
           path: '/',
           icon: 'el-icon-setting'
         },

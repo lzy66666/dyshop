@@ -61,9 +61,28 @@ export default {
     }
   },
   created () {
-    console.log(1)
+    this.getData()
   },
   methods: {
+    getData () {
+      let goods_id = this.$route.params.goods_id
+      console.log(goods_id)
+      // eslint-disable-next-line eqeqeq
+      if (goods_id != '' || typeof (goods_id) !== 'undefined') {
+        this.axios.post('/Admin/Goods/getGoodsPriceInfoFind', {goods_id: goods_id}).then((res) => {
+          // eslint-disable-next-line eqeqeq
+          console.log(res.data)
+          if (res.data.code == 1) {
+            let getGoodsData = res.data.data
+            this.conversion = getGoodsData
+            this.postType = 2
+            this.conversion.goods_id = goods_id
+          }
+        }).catch((error) => {
+          console.log(error)
+        })
+      }
+    },
     onSubmit (formName) {
       this.$refs[formName].validate(valid => {
         this.conversion.goods_id = sessionStorage.getItem('goods_id')

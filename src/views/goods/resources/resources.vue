@@ -52,7 +52,7 @@
       </div>
     </div>
     <span slot="footer" class="dialog-footer">
-      <el-button @click="coverImgStatus = false">取 消</el-button>
+      <el-button @click="close">取 消</el-button>
       <el-button type="primary" @click="coverImgEnter">确 定</el-button>
     </span>
   </div>
@@ -77,21 +77,22 @@ export default {
   methods: {
     openResources () {
       this.flieType = 1
-      this.folderNameList = []
-      this.axios
-        .post('/Admin/Resource/getDirList', {})
-        .then(res => {
-          // eslint-disable-next-line eqeqeq
-          if (res.data.code == 1) {
-            var dataMsg = res.data.data.data
-            this.folderList = dataMsg
-            this.folderMenuData = dataMsg
-          }
-        })
-        .catch(err => {
-          console.log(err)
-        })
-      this.coverImgStatus = true
+
+      // this.folderNameList = []
+      // this.axios
+      //   .post('/Admin/Resource/getDirList', {})
+      //   .then(res => {
+      //     // eslint-disable-next-line eqeqeq
+      //     if (res.data.code == 1) {
+      //       var dataMsg = res.data.data.data
+      //       this.folderList = dataMsg
+      //       this.folderMenuData = dataMsg
+      //     }
+      //   })
+      //   .catch(err => {
+      //     console.log(err)
+      //   })
+      // this.coverImgStatus = true
     },
     // 打开资源文件夹请求图片文件
     getImgList (index) {
@@ -148,12 +149,26 @@ export default {
           coverImgStatus: false
         }
         this.$emit('callBack', callInfo)
+        this.$nextTick(() => {
+          this.flieType = 1
+          this.folderNameList = []
+        })
       } else {
         this.$message({
           message: '警告，请选择一张封面图片',
           type: 'warning'
         })
       }
+    },
+    close () {
+      let callInfo = {
+        coverImgStatus: false
+      }
+      this.$emit('callBack', callInfo)
+      this.$nextTick(() => {
+        this.flieType = 1
+        this.folderNameList = []
+      })
     }
   }
 }

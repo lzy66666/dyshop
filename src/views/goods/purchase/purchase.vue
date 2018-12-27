@@ -55,7 +55,44 @@ export default {
       }
     }
   },
+  created () {
+    this.getData()
+  },
   methods: {
+    getData () {
+      let goods_id = this.$route.params.goods_id
+      console.log(goods_id)
+      // eslint-disable-next-line eqeqeq
+      if (goods_id != '' || typeof (goods_id) !== 'undefined') {
+        this.axios.post('/Admin/Goods/getGoodsPurchase', {goods_id: goods_id}).then((res) => {
+          console.log(res.data)
+          // eslint-disable-next-line eqeqeq
+          if (res.data.code == 1) {
+            let getGoodsData = res.data.data
+            this.purchaseFrom = getGoodsData
+            // nickname 参数对不上
+            this.purchaseFrom.nickname = getGoodsData.goods_nickname
+            // 销售标签赋值
+            this.purchaseFrom.goods_labels = getGoodsData.tags
+            // 是否使用赋值
+            // eslint-disable-next-line eqeqeq
+            if (getGoodsData.is_use == 1) {
+              this.purchaseFrom.is_use = true
+            } else {
+              this.purchaseFrom.is_use = false
+            }
+            // cover图片赋值
+            this.purchaseFrom.coverimage = getGoodsData.goods_head_img
+            // 商品单位赋值
+            this.purchaseFrom.goods_company = getGoodsData.goods_unit
+            this.postType = 2
+            this.purchaseFrom.goods_id = goods_id
+          }
+        }).catch((error) => {
+          console.log(error)
+        })
+      }
+    },
     onSubmit (formName) {
       this.$refs[formName].validate(valid => {
         this.purchaseFrom.goods_id = sessionStorage.getItem('goods_id')

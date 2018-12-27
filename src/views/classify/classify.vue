@@ -10,7 +10,7 @@
       </el-col>
       <el-col :span="23">
         <el-breadcrumb separator="|">
-          <el-breadcrumb-item v-for="item in classify" :key="item">{{item}}</el-breadcrumb-item>
+          <el-breadcrumb-item v-for="item in classify" :key="item.Id" >{{item.goods_class}}</el-breadcrumb-item>
         </el-breadcrumb>
       </el-col>
     </el-row>
@@ -21,24 +21,22 @@
         </el-col>
         <el-col :span="23">
           <el-breadcrumb separator="|">
-            <el-breadcrumb-item v-for="item in TGAlist" :key="item">{{item}}</el-breadcrumb-item>
+            <el-breadcrumb-item v-for="item in TGAlist" :key="item.Id" @click="handleClick(item.Id)">{{item.tag_name}}</el-breadcrumb-item>
           </el-breadcrumb>
         </el-col>
       </el-col>
     </el-row>
     <div class="goodsList" style="margin-top:15px;">
       <el-row :gutter="15">
-        <el-col :span="6" v-for="item in 30" :key="item">
-          <el-card :body-style="{ padding: '20px' }" shadow="hover">
-            <img
-              src="https://img11.360buyimg.com/n7/jfs/t1/16031/29/2053/285252/5c18cee3E0fc6cd7f/1ea7592895fb34ae.jpg"
-              class="image"
-            >
+        <el-col :span="4" v-for="item in goodsList" :key="item.Id">
+          <el-card :body-style="{ padding: '20px 20px 0' }" shadow="hover">
+            <div class="imgblock">
+              <img :src="item.goods_head_img" class="image">
+            </div>
             <div style="padding: 14px;">
-              <span>好吃的汉堡</span>
+              <span class="goodName">{{item.goods_nickname}}</span>
               <div class="bottom clearfix">
-                <time class="time">商品的介绍</time>
-                <el-button type="text" class="button">操作按钮</el-button>
+                <el-button type="text" class="button" @click="edit(item.Id)">修改</el-button>
               </div>
             </div>
           </el-card>
@@ -53,29 +51,75 @@ export default {
   data () {
     return {
       currentDate: new Date(),
-      classify: [],
-      TGAlist: ['全部', '女生', '高价', '布偶', '创意']
+      classify: [
+        {
+          goods_class: '全部',
+          Id: 0
+        }
+      ],
+      TGAlist: [
+        {
+          tag_name: '全部',
+          Id: 0
+        }
+      ],
+      goodsList: []
     }
   },
   mounted () {
-    this.axios.post('/Admin/Goods/getGoodsClass', {}).then((res) => {
-      console.log(res)
-      // eslint-disable-next-line eqeqeq
-      if (res.data.code == 1) {
-        for (let i = 0; i < res.data.data.length; i++) {
-          this.classify.push(res.data.data[i].goods_class)
+    // 拉取分类信息列表
+    this.axios
+      .post('/Admin/Goods/getGoodsClass', {})
+      .then(res => {
+        // console.log(res)
+        // eslint-disable-next-line eqeqeq
+        if (res.data.code == 1) {
+          this.classify = [...this.classify, ...res.data.data]
+          console.log(this.classify)
         }
-      }
-    })
-    this.axios.post('/Admin/Goods/getGoodsTagList', {}).then(res => {
-      console.log(res)
-      // eslint-disable-next-line eqeqeq
-      if (res.data.code == 1) {
-        console.log(res.data)
-      }
-    })
+      })
+      .catch(err => {
+        console.log(err)
+      })
+    // 拉取TGA信息列表
+    this.axios
+      .post('/Admin/Goods/getGoodsTagList', {})
+      .then(res => {
+        // console.log(res)
+        // eslint-disable-next-line eqeqeq
+        if (res.data.code == 1) {
+          this.TGAlist = res.data.data
+        }
+      })
+      .catch(err => {
+        console.log(err)
+      })
+    // 拉取商品信息列表
+    this.axios
+      .post('/Admin/Goods/getGoodsList', { page: 1 })
+      .then(res => {
+        console.log(res)
+        // eslint-disable-next-line eqeqeq
+        if (res.data.code == 1) {
+          this.goodsList = res.data.data.data
+        }
+      })
+      .catch(err => {
+        console.log(1)
+        console.log(err)
+      })
   },
   methods: {
+    // 修改商品信息
+    edit (id) {
+      this.$router.push({
+        path: '',
+        name: 'basicSetting',
+        params: {
+          goods_id: id
+        }
+      })
+    },
     addClassify () {
       this.$prompt('请输入分类', '添加提示', {
         confirmButtonText: '确定',
@@ -84,23 +128,30 @@ export default {
         inputErrorMessage: '输入的不能为空'
       })
         .then(({ value }) => {
-          console.log(value)
-          this.axios.post('/Admin/Goods/addGoodsClass', {goods_class: value}).then((res) => {
-            console.log(res)
-            // eslint-disable-next-line eqeqeq
-            if (res.data.code == 1) {
-              this.$message({
-                type: 'success',
-                message: '添加成功'
-              })
-            }
-          }).catch((err) => {
-            console.log(err)
-            this.$message({
-              type: 'error',
-              message: err
+          this.axios
+            .post('/Admin/Goods/addGoodsClass', { goods_class: value })
+            .then(res => {
+              console.log(res)
+              // eslint-disable-next-line eqeqeq
+              if (res.data.code == 1) {
+                this.classify.push({
+                  id: res.data.data.id,
+                  goods_class: value
+                })
+                this.$message({
+                  type: 'success',
+                  message: '添加成功'
+                })
+                console.log(this.classify)
+              }
             })
-          })
+            .catch(err => {
+              console.log(err)
+              this.$message({
+                type: 'error',
+                message: err
+              })
+            })
         })
         .catch(() => {
           this.$message({
@@ -114,6 +165,7 @@ export default {
         path: '/addGoods'
       })
     }
+
   }
 }
 </script>
@@ -155,11 +207,19 @@ export default {
     padding: 0;
     float: right;
   }
-
-  .image {
+  .imgblock{
     width: 100%;
-    height: auto;
-    display: block;
+    padding-bottom: 100%;
+    position: relative;
+  }
+  .image {
+    position: absolute;
+    top:0;
+    bottom: 0;
+    width: 100%;
+  }
+  .goodName{
+    line-height: 23px;
   }
 
   .clearfix:before,

@@ -23,6 +23,7 @@
         </template>
       </el-table-column>
     </el-table>
+    <el-button @click="add">新增</el-button>
     <el-dialog
       :title="sku_page_type== 1?'新增SKU':'SKU修改'"
       :visible.sync="skuPanelStatus"
@@ -98,26 +99,26 @@ export default {
       coverImgStatus: false
     }
   },
-  mounted () {
-    let goodsId = sessionStorage.getItem('goods_id')
-    console.log(goodsId)
-    // eslint-disable-next-line eqeqeq
-    if (!goodsId || goodsId == null) {
-      this.$message({
-        type: 'error',
-        message: '丢失商品ID，非法数据操作'
-      })
-      return
-    }
-    this.axios.post('/Admin/Goods/getGoodsSKUList', {page: 1, goods_id: goodsId}).then(res => {
-      // console.log(res.data.data.data)
-      // eslint-disable-next-line eqeqeq
-      if (res.data.code == 1) {
-        this.skuData = res.data.data.data
-        console.log(this.skuData)
-      }
-    })
-  },
+  // mounted () {
+  //   let goodsId = sessionStorage.getItem('goods_id')
+  //   console.log(goodsId)
+  //   // eslint-disable-next-line eqeqeq
+  //   if (!goodsId || goodsId == null) {
+  //     this.$message({
+  //       type: 'error',
+  //       message: '丢失商品ID，非法数据操作'
+  //     })
+  //     return
+  //   }
+  //   this.axios.post('/Admin/Goods/getGoodsSKUList', {page: 1, goods_id: goodsId}).then(res => {
+  //     // console.log(res.data.data.data)
+  //     // eslint-disable-next-line eqeqeq
+  //     if (res.data.code == 1) {
+  //       this.skuData = res.data.data.data
+  //       console.log(this.skuData)
+  //     }
+  //   })
+  // },
   methods: {
     // 添加sku
     add () {
@@ -159,7 +160,10 @@ export default {
         this.skuPanelStatus = false
         // eslint-disable-next-line eqeqeq
         if (res.data.code == 1 && this.sku_page_type == 1) {
-          this.skuData.push(this.sku_form)
+          let data = this.sku_form
+          this.skuData.push(data)
+          console.clear()
+          console.log(this.skuData)
           this.$message({
             type: 'success',
             message: res.data.msg
