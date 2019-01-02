@@ -99,15 +99,19 @@ export default {
           dir_id: this.folderList[index].Id
         })
         .then(res => {
-          console.log('imgs')
-          console.log(res.data.data.data)
-          console.log('oldimgs')
-          console.log(this.selectImgInfo)
           this.flieImgList = res.data.data.data
-          for (let i = 0; i < this.selectImgInfo.length; i++) {
-            for (let j = 0; j < this.flieImgList.length; j++) {
-              if (this.selectImgInfo[i].resource_url == this.flieImgList[j].resource_url) {
+          if (this.max == 1) {
+            for (let i = 0; i < this.flieImgList.length; i++) {
+              if (this.flieImgList[i].resource_url == this.selectImgInfo) {
                 this.flieImgList[i].active = true
+              }
+            }
+          } else {
+            for (let i = 0; i < this.selectImgInfo.length; i++) {
+              for (let j = 0; j < this.flieImgList.length; j++) {
+                if (this.selectImgInfo[i].resource_url == this.flieImgList[j].resource_url) {
+                  this.flieImgList[i].active = true
+                }
               }
             }
           }
@@ -126,16 +130,15 @@ export default {
     // 选中图片
     selectImg (index) {
       if (this.max === 1) {
-        this.selectImgInfo = []
         for (let i = 0; i < this.flieImgList.length; i++) {
           // eslint-disable-next-line eqeqeq
           if (i == index) {
-            // this.$set(this.flieImgList[i], 'active', true)
+            this.$set(this.flieImgList[i], 'active', true)
             this.flieImgList[i].active = true
-            this.selectImgInfo.push(this.flieImgList[i])
+            this.selectImgInfo[0] = this.flieImgList[i]
           } else {
             this.flieImgList[i].active = false
-            // this.$set(this.flieImgList[i], 'active', false)
+            this.$set(this.flieImgList[i], 'active', false)
           }
         }
       } else {
@@ -143,16 +146,12 @@ export default {
         let status = this.flieImgList[index].active
         console.log('选中状态' + status)
         if (typeof (status) === 'undefined' || status === false) {
-          console.log(1111111111111111)
           this.selectImgInfo.push(this.flieImgList[index])
           this.$set(this.flieImgList[index], 'active', true)
         } else {
           this.selectImgInfo.splice(index, 1)
-          console.log(this.flieImgList)
           this.flieImgList[index].active = false
-          console.log(1111111111111)
-          console.log(this.flieImgList)
-          // this.$set(this.flieImgList[index], 'active', false)
+          this.$set(this.flieImgList[index], 'active', false)
         }
       }
     },

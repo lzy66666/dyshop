@@ -50,9 +50,15 @@ export default {
         goods_integral: ''
       },
       conversionRules: {
-        goods_cost: [{ required: true, message: '请输入成本价', trigger: 'blur' }],
-        goods_price: [{ required: true, message: '请输入售价', trigger: 'blur' }],
-        goods_game_ticket: [{ required: true, message: '请输入游戏券', trigger: 'blur' }],
+        goods_cost: [
+          { required: true, message: '请输入成本价', trigger: 'blur' }
+        ],
+        goods_price: [
+          { required: true, message: '请输入售价', trigger: 'blur' }
+        ],
+        goods_game_ticket: [
+          { required: true, message: '请输入游戏券', trigger: 'blur' }
+        ],
         goods_activity_game_ticket: [
           { required: true, message: '请输入活动游戏券', trigger: 'blur' }
         ],
@@ -65,27 +71,26 @@ export default {
   },
   methods: {
     getData () {
-      let goods_id = this.$route.params.goods_id
-      console.log(goods_id)
-      // eslint-disable-next-line eqeqeq
-      if (goods_id != '' || typeof (goods_id) !== 'undefined') {
-        this.axios.post('/Admin/Goods/getGoodsPriceInfoFind', {goods_id: goods_id}).then((res) => {
+      this.conversion.goods_id = this.$route.params.goods_id
+      this.axios
+        .post('/Admin/Goods/getGoodsPriceInfoFind', { goods_id: this.conversion.goods_id })
+        .then(res => {
           // eslint-disable-next-line eqeqeq
           console.log(res.data)
           if (res.data.code == 1) {
             let getGoodsData = res.data.data
-            this.conversion = getGoodsData
-            this.postType = 2
-            this.conversion.goods_id = goods_id
+            if (getGoodsData != null) {
+              this.conversion = getGoodsData
+              this.postType = 2
+            }
           }
-        }).catch((error) => {
+        })
+        .catch(error => {
           console.log(error)
         })
-      }
     },
     onSubmit (formName) {
       this.$refs[formName].validate(valid => {
-        this.conversion.goods_id = sessionStorage.getItem('goods_id')
         if (!this.conversion.goods_id.length) {
           this.$message({
             type: 'error',
@@ -94,16 +99,18 @@ export default {
           return
         }
         if (valid) {
-          this.axios.post('/Admin/Goods/addGoodsPrice', this.conversion).then((res) => {
-            console.log(res)
-            // eslint-disable-next-line eqeqeq
-            if (res.data.code == 1) {
-              this.$message({
-                type: 'success',
-                message: res.data.msg
-              })
-            }
-          })
+          this.axios
+            .post('/Admin/Goods/addGoodsPrice', this.conversion)
+            .then(res => {
+              console.log(res)
+              // eslint-disable-next-line eqeqeq
+              if (res.data.code == 1) {
+                this.$message({
+                  type: 'success',
+                  message: res.data.msg
+                })
+              }
+            })
         } else {
           console.log('error submit!!')
           return false

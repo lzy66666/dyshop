@@ -1,7 +1,7 @@
 <template>
   <div>
     <el-table :data="skuData" border style="width: 100%">
-      <el-table-column prop="number" label="编号" width="80" align="center"></el-table-column>
+      <el-table-column type="index" label="编号" width="80" align="center"></el-table-column>
       <el-table-column prop="goods_sku_code" label="SKU编号" align="center"></el-table-column>
       <el-table-column prop="goods_sku_name" label="SKU名称" align="center"></el-table-column>
       <el-table-column prop="goods_sku_color" label="颜色" align="center"></el-table-column>
@@ -16,10 +16,10 @@
           <el-switch v-model="scope.row.goods_sku_is_use"></el-switch>
         </template>
       </el-table-column>
-      <el-table-column fixed="right" label="操作" width="120" align="center">
+      <el-table-column fixed="right" label="操作" width="120" align="center" >
         <template slot-scope="scope">
-          <el-button @click="edit(scope.row)" type="text" size="small">编辑</el-button>
-          <el-button @click="add(scope.row)" type="text" size="small">新增</el-button>
+          <el-button @click="edit(scope.$index)" type="text" size="small">编辑</el-button>
+          <el-button @click="add" type="text" size="small">新增</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -70,7 +70,7 @@
       center
       class="folderPanel"
     >
-      <v-resources :folderList="folderList" :folderMenuData="folderMenuData" v-on:callBack="imgUrlBack"></v-resources>
+      <v-resources :folderList="folderList" :folderMenuData="folderMenuData" :max="1" :selectImgInfo="[sku_form.goods_sku_head_img]" v-on:callBack="imgUrlBack"></v-resources>
     </el-dialog>
   </div>
 </template>
@@ -99,77 +99,69 @@ export default {
       coverImgStatus: false
     }
   },
-  // mounted () {
-  //   let goodsId = sessionStorage.getItem('goods_id')
-  //   console.log(goodsId)
-  //   // eslint-disable-next-line eqeqeq
-  //   if (!goodsId || goodsId == null) {
-  //     this.$message({
-  //       type: 'error',
-  //       message: '丢失商品ID，非法数据操作'
-  //     })
-  //     return
-  //   }
-  //   this.axios.post('/Admin/Goods/getGoodsSKUList', {page: 1, goods_id: goodsId}).then(res => {
-  //     // console.log(res.data.data.data)
-  //     // eslint-disable-next-line eqeqeq
-  //     if (res.data.code == 1) {
-  //       this.skuData = res.data.data.data
-  //       console.log(this.skuData)
-  //     }
-  //   })
-  // },
+  created () {
+    this.sku_page_type = this.$route.params.pageType
+    this.sku_form.goods_id = this.$route.params.goods_id
+    // 如果等于2属于修改商品参数，拉取商品参数否则属于添加
+    if (this.sku_page_type == 2) {
+      this.axios.post('/Admin/Goods/getGoodsSKUList', {goods_id: this.sku_form.goods_id, page: 1}).then(res => {
+        console.log(res)
+        if (res.data.code == 1) {
+          if (res.data.data.data != null) {
+            this.skuData = res.data.data.data
+          }
+        }
+      })
+    }
+  },
   methods: {
     // 添加sku
     add () {
       this.skuPanelStatus = true
       this.sku_page_type = 1
-      for (const i in this.sku_form) {
-        if (this.sku_form.hasOwnProperty(i)) {
-          this.sku_form[i] = ''
-        }
+      let createFrom = {
+        goods_id: this.$route.params.goods_id,
+        goods_sku_code: '',
+        goods_sku_color: '',
+        goods_sku_head_img: '',
+        goods_sku_total_num: '',
+        goods_sku_is_use: false,
+        goods_sku_name: ''
       }
+      this.sku_form = createFrom
     },
     // 编辑sku
-    edit (row) {
+    edit (index) {
+      this.sku_form = JSON.parse(JSON.stringify(this.skuData[index]))
+      this.sku_form.index = index
+      this.sku_form.goods_sku_id = this.sku_form.Id
       this.skuPanelStatus = true
       this.sku_page_type = 2
-      this.sku_form = row
     },
 
     // SKU发送数据
     skuSubmit () {
-      this.sku_form.goods_id = sessionStorage.getItem('goods_id')
-      if (!this.sku_form.goods_id.length) {
-        this.$message({
-          type: 'error',
-          message: '丢失商品ID，非法数据操作'
-        })
-        return
-      }
       let postUrl = ''
       // eslint-disable-next-line eqeqeq
       if (this.sku_page_type == 1) {
         postUrl = '/Admin/Goods/addGoodsSKU'
       } else {
         postUrl = '/Admin/Goods/saveGoodsSKU'
-        this.sku_form.goods_sku_id = this.sku_form.Id
+        // this.sku_form.goods_sku_id = this.sku_form.Id
       }
       this.axios.post(postUrl, this.sku_form).then(res => {
-        console.log(res)
         this.skuPanelStatus = false
         // eslint-disable-next-line eqeqeq
         if (res.data.code == 1 && this.sku_page_type == 1) {
           let data = this.sku_form
           this.skuData.push(data)
-          console.clear()
-          console.log(this.skuData)
           this.$message({
             type: 'success',
             message: res.data.msg
           })
         // eslint-disable-next-line eqeqeq
-        } else if (res.data.code == 1) {
+        } else if (res.data.code == 1 && this.sku_page_type == 2) {
+          this.$set(this.skuData, this.sku_form.index, this.sku_form)
           this.$message({
             type: 'success',
             message: res.data.msg

@@ -69,7 +69,7 @@
       center
       class="folderPanel"
     >
-      <v-resources :folderList="folderList" :folderMenuData="folderMenuData" :max="1" v-on:callBack="imgUrlBack"></v-resources>
+      <v-resources :folderList="folderList" :folderMenuData="folderMenuData" :max="1" v-on:callBack="imgUrlBack" :selectImgInfo="[goodsFrom.coverimage]"></v-resources>
       <!-- <div class="resourcesListBody" style="height:550px;">
         <div class="folderListMenu">
           <el-tree :data="folderMenuData" :props="defaultProps">
@@ -163,6 +163,7 @@
 
 <script>
 import vResources from '../resources/resources'
+
 export default {
   data () {
     return {
@@ -320,9 +321,7 @@ export default {
         postUrl = '/Admin/Goods/saveGoodsInfo'
       }
       this.$refs[formName].validate(valid => {
-        console.log(valid)
         if (valid) {
-          // for(let i=0;i<this.goodsFrom.)
           // eslint-disable-next-line no-unreachable
           this.axios
             .post(postUrl, this.goodsFrom)
@@ -331,6 +330,19 @@ export default {
               // eslint-disable-next-line eqeqeq
               if (res.data.code == 1) {
                 sessionStorage.setItem('goods_id', res.data.data.goods_id)
+                this.$message({
+                  type: 'success',
+                  message: '修改成功'
+                })
+                let pageParams = {}
+                if (this.postType == 1) {
+                  pageParams.busGoodsId = res.data.data.goods_id
+                  pageParams.pageType = 1
+                } else {
+                  pageParams.busGoodsId = this.goodsFrom.goods_id
+                  pageParams.pageType = 2
+                }
+                this.$bus.$emit('goodsParams', pageParams)
               } else {
                 this.$message({
                   type: 'warning',
@@ -382,6 +394,7 @@ export default {
         this.axios.post('/Admin/Goods/getGoodsFind', {goods_id: goods_id}).then((res) => {
           // eslint-disable-next-line eqeqeq
           if (res.data.code == 1) {
+            this.$bus.$emit('goodsParams', {busGoodsId: goods_id, pageType: 2})
             let getGoodsData = res.data.data
             this.goodsFrom = getGoodsData
             // nickname 参数对不上
@@ -407,6 +420,10 @@ export default {
         })
       }
     }
+  },
+  // 组件销毁的时候关闭bus数据传输
+  beforeDestroy () {
+    this.$bus.$off('goodsParams')
   },
   components: {
     vResources

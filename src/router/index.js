@@ -1,5 +1,6 @@
 import Vue from 'vue'
 import Router from 'vue-router'
+import bus from 'vue-bus'
 import home from '@/views/home/home'
 import addGoods from '@/views/addGoods/addGoods'
 import classify from '@/views/classify/classify'
@@ -9,7 +10,7 @@ import details from '@/views/goods/details/details'
 import purchase from '@/views/goods/purchase/purchase'
 import skuSetting from '@/views/goods/skuSetting/skuSetting'
 
-Vue.use(Router)
+Vue.use(Router, bus)
 
 export default new Router({
   mode: 'history',

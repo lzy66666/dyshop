@@ -9,24 +9,19 @@
         <div class="menu-title">分类:</div>
       </el-col>
       <el-col :span="23">
-        <el-breadcrumb separator="|">
-          <el-breadcrumb-item v-for="item in classify" :key="item.Id">{{item.goods_class}}</el-breadcrumb-item>
-        </el-breadcrumb>
+        <!-- <el-breadcrumb separator="|">
+          <el-breadcrumb-item v-for="(item,index) in classify" :key="item.Id"  :class="{'activeMenu':currentClass==index}">{{item.goods_class}}</el-breadcrumb-item>
+        </el-breadcrumb> -->
+        <div class="classItem" v-for="(item,index) in classify" :key="item.Id"  :class="{'activeMenu':currentClass==index}" @click="selectClass(index)">{{item.goods_class}}</div>
       </el-col>
     </el-row>
-    <el-row style="margin-top:20px;">
+    <el-row>
       <el-col :span="24">
         <el-col :span="1">
           <div class="menu-title">TAG:</div>
         </el-col>
         <el-col :span="23">
-          <el-breadcrumb separator="|">
-            <el-breadcrumb-item
-              v-for="item in TGAlist"
-              :key="item.Id"
-              @click="handleClick(item.Id)"
-            >{{item.tag_name}}</el-breadcrumb-item>
-          </el-breadcrumb>
+        <div class="classItem" v-for="(item,index) in TGAlist" :key="item.Id"  :class="{'activeMenu':currentTag==index}" @click="selectTag(index)">{{item.tag_name}}</div>
         </el-col>
       </el-col>
     </el-row>
@@ -49,7 +44,6 @@
       <el-row>
         <el-col :span="24" style="text-align:center;">
           <el-pagination
-            @size-change="handleSizeChange"
             @current-change="handleCurrentChange"
             :current-page.sync="currentPage"
             :page-size="100"
@@ -80,7 +74,9 @@ export default {
         }
       ],
       goodsList: [],
-      currentPage: 1
+      currentPage: 1,
+      currentClass: 0,
+      currentTag: 0
     }
   },
   mounted () {
@@ -114,9 +110,13 @@ export default {
     this.getGoodsInfoList(1)
   },
   methods: {
-    handleSizeChange (val) {
-      console.log(`每页 ${val} 条`)
+    selectClass (index) {
+      this.currentClass = index
     },
+    selectTag (index) {
+      this.currentTag = index
+    },
+    // 分页
     handleCurrentChange (val) {
       this.getGoodsInfoList(val)
     },
@@ -138,7 +138,7 @@ export default {
             }
             this.goodsList = res.data.data.data
             this.currentPage = res.data.count
-          }else {
+          } else {
 
           }
         })
@@ -206,13 +206,35 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.el-main{
+  background: #fff;
+}
+.classItem{
+  float: left;
+  font-size: 14px;
+  line-height: 14px;
+  color: #606266;
+  padding:10px;
+  cursor: pointer;
+  &:first-child{
+    margin-left: 0;
+  }
+}
+
+.activeMenu{
+  color: #66b1ff;
+  border-bottom: 2px solid #66b1ff;
+}
+
 .menu-title {
   font-size: 14px;
   line-height: 1;
+  padding: 10px 0;
 }
 .el-breadcrumb__inner,
 .el-breadcrumb__item {
   cursor: pointer;
+  color: red !important;
 }
 .goodsList {
   background: #fff;
@@ -250,6 +272,7 @@ export default {
     width: 100%;
     padding-bottom: 100%;
     position: relative;
+    overflow: hidden;
   }
   .image {
     position: absolute;

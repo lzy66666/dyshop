@@ -31,7 +31,7 @@ export default {
         },
         {
           name: '商品添加',
-          path: '/addGoods',
+          path: '/addGoods/basic',
           icon: 'el-icon-setting'
         },
         {

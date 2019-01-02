@@ -5,6 +5,7 @@
 </template>
 
 <script>
+import Bus from './router/bus.js'
 export default {
   name: 'App'
 }

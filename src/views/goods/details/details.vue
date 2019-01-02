@@ -25,7 +25,11 @@
         <el-col :span="13" :offset="1">
           <div class="ipone">
             <el-scrollbar style="height:100%;background:#fff;">
-              <div class="detail-item" v-for="item in detailsImgList" :key="item.resource_url+new Date()">
+              <div
+                class="detail-item"
+                v-for="item in detailsImgList"
+                :key="item.resource_url+new Date()"
+              >
                 <img :src="item.resource_url" :alt="item.resource_nickname">
               </div>
             </el-scrollbar>
@@ -90,12 +94,13 @@ export default {
     },
     // 初始化页面
     pageInit () {
-      let goods_id = this.$route.params.goods_id
-      if (typeof (goods_id) === 'undefined' || goods_id == '') {
+      this.goods_id = this.$route.params.goods_id
+      console.log(this.$route.params)
 
-      } else {
-        // 拉取商品详情列表
-        this.axios.post('/Admin/Goods/getGoodsFind', {goods_id: 19}).then((res) => {
+      // 拉取商品详情列表
+      this.axios
+        .post('/Admin/Goods/getGoodsFind', { goods_id: this.goods_id})
+        .then(res => {
           console.log(res)
           if (res.data.code == 1) {
             let getImgData = res.data.data.goods_detail.split(',')
@@ -105,10 +110,10 @@ export default {
               })
             }
           }
-        }).catch((err) => {
+        })
+        .catch(err => {
           console.log(err)
         })
-      }
     },
     // 打开资源列表
     openResources () {
@@ -134,17 +139,23 @@ export default {
       for (let i = 0; i < this.detailsImgList.length; i++) {
         imgArray.push(this.detailsImgList[i].resource_url)
       }
-      this.axios.post('/Admin/Goods/saveGoodsDetail', {goods_id: 19, goods_detail: imgArray.join(',')}).then((res) => {
-        console.log(res)
-        if (res.data.code == 1) {
-          this.$message({
-            type: 'success',
-            message: '提交成功'
-          })
-        }
-      }).catch((error) => {
-        console.log(error)
-      })
+      this.axios
+        .post('/Admin/Goods/saveGoodsDetail', {
+          goods_id: this.goods_id,
+          goods_detail: imgArray.join(',')
+        })
+        .then(res => {
+          console.log(res)
+          if (res.data.code == 1) {
+            this.$message({
+              type: 'success',
+              message: '提交成功'
+            })
+          }
+        })
+        .catch(error => {
+          console.log(error)
+        })
     }
   },
   components: {
@@ -207,7 +218,7 @@ export default {
   cursor: pointer;
   position: relative;
   overflow: hidden;
-  margin:5px;
+  margin: 5px;
   &:hover {
     border-color: #409eff;
   }
